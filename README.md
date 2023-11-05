@@ -135,5 +135,104 @@ int msgrcv ( int msqid, struct msgbuf *msgp, int msgsz,long mtype, int msgflg );
 ```
 第一个参数用来指定要检索的队列(必须由msgget()调用返回)，第二个参数(msgp)，第三个参数(，第四个参数(。
 （5）消息队列属性操作
-	int msgctl ( int msgqid, int cmd, struct msqid_ds *buf );
+```
+int msgctl ( int msgqid, int cmd, struct msqid_ds *buf );
+/* msgqid：是打开的消息队列id */
+/* cmd：是规定的命令：IPC_STAT 读取消息队列的数据结构msqid_ds，并将其存储在buf指定的地址中；IPC_SET	设置消息队列的数据结构msqid_ds中的ipc_perm元素的值，这个值取自buf参数；IPC_RMID 从系统内核中移走消息队列 */
+/* buf：是用户缓冲区，供用户存放控制参数何查询结果 */
+```
+（6）消息队列的应用
+```
+#include<sys/types.h>
+#include<sys/msg.h>
+#include<unistd.h>
+#include<sys/ipc.h>
+#include<stdio.h>
+void msg_stat(int,struct msqid_ds);
 
+int main()
+{
+	int gflags,sflags,rflags; /* define */
+	key_t key; /* call function key_t() */
+	int msgid; /* massage queue id return by msgget() */
+	int reval; /*  */
+
+	struct msgsbuf
+	{
+		int mtype; /* massage type is int */
+		char mtext[1]; /* text: type is char, lenth is 1 */
+	}msg_sbuf; /* define a massage buffer msg_sbuf */
+
+	struct msgmbuf{
+	 	int mtype; /* massage type is int */
+	 	char mtext[10]; /* text: type is char, lenth is 10 */
+	}msg_rbuf; /* define a massage buffer msg_rbuf */
+
+	struct msqid_ds msg_ginfo,msg_sinfo;
+char *msgpath="/home/msgqueue";
+key=ftok(msgpath,'a');
+gflags=IPC_CREAT|IPC_EXCL;
+msgid=msgget(key,gflags|00666);
+if(msgid==-1){
+ printf("msg create error\n");
+ return;
+}
+
+msg_stat(msgid,msg_ginfo);
+sflags=IPC_NOWAIT;
+msg_sbuf.mtype=10;
+msg_sbuf.mtext[0]='a';
+reval=msgsnd(msgid,&msg_sbuf,sizeof(msg_sbuf.mtext),sflags);
+if(reval==-1){
+ printf("message send error\n");
+}
+
+msg_stat(msgid,msg_ginfo);
+rflags=IPC_NOWAIT|MSG_NOERROR;
+reval=msgrcv(msgid,&msg_rbuf,4,10,rflags);
+if(reval==-1){
+ printf("read msg error\n");
+}
+else
+ printf("read from msg queue %d bytes\n",reval);
+
+msg_stat(msgid,msg_ginfo);
+msg_sinfo.msg_perm.uid=8;
+msg_sinfo.msg_perm.gid=8;
+msg_sinfo.msg_qbytes=16388;
+
+reval=msgctl(msgid,IPC_SET,&msg_sinfo);
+if(reval==-1){
+ printf("msg set info error\n");
+ return;
+}
+msg_stat(msgid,msg_ginfo);
+reval=msgctl(msgid,IPC_RMID,NULL);
+if(reval==-1){
+ printf("unlink msg queue error\n");
+ return;
+}
+}
+
+
+void msg_stat(int msgid,struct msqid_ds msg_info){
+ int reval;
+ sleep(1);
+ reval=msgctl(msgid,IPC_STAT,&msg_info);
+ if(reval==-1){
+  printf("get msg info error\n");
+  return;
+ }
+ printf("\n");
+ printf("current number of bytes on queue is %d\n",msg_info.msg_cbytes);
+ printf("number of messages in queue is %d\n",msg_info.msg_qnum);
+ printf("max number of bytes on queue is %d\n",msg_info.msg_qbytes);
+ printf("pid of last msgsnd is %d\n",msg_info.msg_lspid);
+ printf("pid of last msgrcv is %d\n",msg_info.msg_lrpid);
+ printf("last msgsnd time is%s",ctime(&(msg_info.msg_stime)));
+ printf("last msgrcv time is%s",ctime(&(msg_info.msg_rtime)));
+ printf("last change time is%s",ctime(&(msg_info.msg_ctime)));
+ printf("msg uid is%d\n",msg_info.msg_perm.uid);
+ printf("msg gid is%d\n",msg_info.msg_perm.gid);
+}
+```
