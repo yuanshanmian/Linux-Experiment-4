@@ -138,21 +138,23 @@ int main()
  	printf("read from msg queue %d bytes\n",reval); /* print the number of bytes of recived message */
 
 	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() for g to save current msqid_ds imformation */
-	msg_sinfo.msg_perm.uid=8;
-msg_sinfo.msg_perm.gid=8;
-msg_sinfo.msg_qbytes=16388;
+	msg_sinfo.msg_perm.uid=8; /* update the owner of s message queue to user 8 in s message data structure buffer */
+	msg_sinfo.msg_perm.gid=8; /* update the owner of s message queue to group 8 in s message data structure buffer */
+	msg_sinfo.msg_qbytes=16388; /* update the maximun size of the message queue in the terms of the total size of all the messages to 16388 in s message data structure buffer */
 
-reval=msgctl(msgid,IPC_SET,&msg_sinfo);
-if(reval==-1){
- printf("msg set info error\n");
- return;
-}
-msg_stat(msgid,msg_ginfo);
-reval=msgctl(msgid,IPC_RMID,NULL);
-if(reval==-1){
- printf("unlink msg queue error\n");
- return;
-}
+	reval=msgctl(msgid,IPC_SET,&msg_sinfo); /* call funtion msgctl() to update message queue imformation */
+	if(reval==-1){/* failed to update */
+	 printf("msg set info error\n");
+	 return;
+	}
+
+	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() for g to save current msqid_ds imformation */
+
+	reval=msgctl(msgid,IPC_RMID,NULL); /* delete the message queue */
+	if(reval==-1){/* failed to delete */
+	 printf("unlink msg queue error\n");
+	 return;
+	}
 }
 
 
@@ -167,7 +169,7 @@ void msg_stat(int msgid,struct msqid_ds msg_info)
  }
 
  printf("\n");
- printf("current number of bytes on queue is %d\n",msg_info.msg_cbytes);
+ printf("current number of bytes on queue is %d\n",msg_info.msg_cbytes); /* print the number of bytes of all the message in message queue */
  printf("number of messages in queue is %d\n",msg_info.msg_qnum);
  printf("max number of bytes on queue is %d\n",msg_info.msg_qbytes);
  printf("pid of last msgsnd is %d\n",msg_info.msg_lspid);
