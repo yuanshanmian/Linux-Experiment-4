@@ -114,7 +114,7 @@ struct msgbuf {
 ```
 int msgget(key_t kye,int flag);
 /* key：是一个函数，是创建/打开队列的键值，直接用常量指定或由ftok（）函数产生 */
-/* flag：指定创建/打开方式，可以是ipc_create、ipc_excl、ipc_nowait或三者的或结果 */
+/* flag：指定创建/打开方式，可以是_ipc_create_(create a new massage queue. If the specified key exists, it has no effect)、_ipc_excl_(typically used with ipc_create to ensure created, and it'll fail if the specified key exist)、_ipc_nowait_或三者的或结果 */
 ```
 （3）发送消息
 ```
@@ -168,11 +168,11 @@ int main()
 	 	char mtext[10]; /* text: type is char, lenth is 10 */
 	}msg_rbuf; /* define a massage buffer msg_rbuf */
 
-	struct msqid_ds msg_ginfo,msg_sinfo;
-char *msgpath="/home/msgqueue";
-key=ftok(msgpath,'a');
-gflags=IPC_CREAT|IPC_EXCL;
-msgid=msgget(key,gflags|00666);
+	struct msqid_ds msg_ginfo,msg_sinfo; /* define 2 massage queue ID data structure for g and s */
+	char *msgpath="/home/msgqueue"; /* specify path for massage queue */
+	key=ftok(msgpath,'a'); /* use msgpath to create a unique IPC key. 'proj_id' project identifier is the ASCLL value of the character 'a'. the result will be a integer */
+	gflags=IPC_CREAT|IPC_EXCL; /*  */
+	msgid=msgget(key,gflags|00666); /*  */
 if(msgid==-1){
  printf("msg create error\n");
  return;
