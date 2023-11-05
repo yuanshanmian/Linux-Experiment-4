@@ -176,7 +176,7 @@ int main()
 	struct msqid_ds msg_ginfo,msg_sinfo; /* define 2 massage queue ID data structure for g and s */
 	char *msgpath="/home/msgqueue"; /* specify path for massage queue */
 	key=ftok(msgpath,'a'); /* use msgpath to create a unique IPC key. 'proj_id' project identifier is the ASCLL value of the character 'a'. the result will be a integer */
-	gflags=IPC_CREAT|IPC_EXCL; /*  */
+	gflags=IPC_CREAT|IPC_EXCL; /* g creat a new massage queue with detection */
 	msgid=msgget(key,gflags|00666); /* The 00666 permission value means that the message queue will be created with read and write permissions for all users (readable and writable by the owner, the group, and others).  */
 	if(msgid==-1){
 	 printf("msg create error\n");
