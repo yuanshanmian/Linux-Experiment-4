@@ -94,3 +94,38 @@ struct msg {
 	short msg_ts; /* 消息正文的大小 */ 
 	};
 ```
+## 2.3、消息缓冲区(msgbuf) 
+对发送消息，先预设一个msgbuf缓冲区并写入消息类型何内容，调用相应的发送函数。对读取消息，先分配一个msgbuf缓冲区。然后把消息读入该缓冲区
+```
+struct msgbuf { 
+	long mtype; /* 消息的类型，必须为正数 */ 
+	char mtext[1]; /* 消息正文 */ 
+	};
+```
+## 2.4、消息队列基本操作
+（1）相应头文件
+```
+#include <sys/types.h> /* 包含了一些基本数据类型的定义，通常用于在系统级别定义标准数据类型，如整数类型、进程ID等 */
+#include <sys/ipc.h> /* 包含了与进程间通信（IPC）的键（key）相关的定义，以及用于创建和管理IPC对象的函数原型。key 是一个整数值，它用于唯一标识IPC对象，如消息队列 */
+#include <sys/msg.h> /* 包含了与消息队列相关的定义和函数原型。它包括了用于创建、发送和接收消息的函数以及消息队列的属性和结构的定义，例如 struct msqid_ds，它用于描述消息队列的属性，如前面所述 */
+```
+（2）打开或创建消息队列
+为了创建一个新的消息队列，或存取一个已经存在的队列，要使用msgget()系统调用
+```
+int msgget(key_t kye,int flag);
+/* key：是一个函数，是创建/打开队列的键值，直接用常量指定或由ftok（）函数产生 */
+/* flag：指定创建/打开方式，可以是ipc_create、ipc_excl、ipc_nowait或三者的或结果 */
+```
+（3）发送消息
+```
+int msgsnd ( int msqid, struct msgbuf *msgp, int msgsz,int msgflg ); 
+/* msqid：是队列标识符，由msgget()调用返回 */
+/* msgp：是一个指针，指向我们重新声明和装载的消息缓冲区 */
+/* msgsz：包含了消息以字节为单位的长度，其中包括了消息类型的4个字节 */
+/* msgflg：可以设置成0(忽略)，或者IPC_NOWAIT：如果消息队列满，消息不写到队列中，并且控制权返回给调用进程(继续执行)。如果不指定IPC_NOWAIT，调用进程将挂起(阻塞)直到消息被写到队列中 */
+```
+（4）读取消息
+```
+int msgrcv ( int msqid, struct msgbuf *msgp, int msgsz,long mtype, int msgflg );
+```
+。
