@@ -114,10 +114,12 @@ struct msgbuf {
 ```
 int msgget(key_t kye,int flag);
 /* key：是一个函数，是创建/打开队列的键值，直接用常量指定或由ftok（）函数产生 */
-/* flag: is an integer value that specifies various flags for the msgget operation. typically used like 'IPC_CREAT | 0666', means bitwise ORed with the permissions value (0666: permission value means that the message queue will be created with read and write permissions for all users (readable and writable by the owner, the group, and others).) to set the desired permissions for the message queue. Some commonly used flags include:*/
+/* flag: is an integer value that specifies various flags for the msgget operation. typically used like 'IPC_CREAT | 0666', means bitwise ORed with the permissions value (0666) to set the desired permissions for the message queue. */
+/* Some commonly used flags include:*/
 /* 	ipc_create：create a new massage queue. If the specified key exists, it has no effect) */
 /*	ipc_excl：typically used with ipc_create to ensure created, and it'll fail if the specified key exist */
 /*	ipc_nowait：或三者的或结果,type is symbolic constant, all defined in <sys/ipc.h>*/
+/* 0666: permission value means that the message queue will be created with read and write permissions for all users (readable and writable by the owner, the group, and others). */
 ```
 （3）发送消息
 ```
