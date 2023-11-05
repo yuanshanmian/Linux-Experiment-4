@@ -144,7 +144,7 @@ int msgrcv ( int msqid, struct msgbuf *msgp, int msgsz,long mtype, int msgflg );
 int msgctl ( int msgqid, int cmd, struct msqid_ds *buf );
 /* msgqid：是打开的消息队列id */
 /* cmd：是规定的命令：IPC_STAT 读取消息队列的数据结构msqid_ds，并将其存储在buf指定的地址中；IPC_SET	设置消息队列的数据结构msqid_ds中的ipc_perm元素的值，这个值取自buf参数；IPC_RMID 从系统内核中移走消息队列 */
-/* buf：是用户缓冲区，供用户存放控制参数何查询结果 */
+/* buf：don't like the msgbuf, msgbuf is used to store massage content, this is used to store information about the message queue or to specify new attributes when using IPC_SET. */
 ```
 （6）消息队列的应用
 ```
@@ -157,7 +157,7 @@ void msg_stat(int,struct msqid_ds);
 
 int main()
 {
-	int gflags,sflags,rflags; /* */
+	int gflags,sflags,rflags; /* flags like IPC_CREAT, IPC_EXCL */
 	key_t key; /* call function key_t() */
 	int msgid; /* massage queue id return by msgget() */
 	int reval; /*  */
@@ -178,12 +178,12 @@ int main()
 	key=ftok(msgpath,'a'); /* use msgpath to create a unique IPC key. 'proj_id' project identifier is the ASCLL value of the character 'a'. the result will be a integer */
 	gflags=IPC_CREAT|IPC_EXCL; /* g creat a new massage queue with detection */
 	msgid=msgget(key,gflags|00666); /* The 00666 permission value means that the message queue will be created with read and write permissions for all users (readable and writable by the owner, the group, and others).  */
-	if(msgid==-1){
+	if(msgid==-1){ /* massage queue ID creation failed */
 	 printf("msg create error\n");
 	 return;
 	}
 
-msg_stat(msgid,msg_ginfo);
+	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() */
 sflags=IPC_NOWAIT;
 msg_sbuf.mtype=10;
 msg_sbuf.mtext[0]='a';
@@ -220,14 +220,16 @@ if(reval==-1){
 }
 
 
-void msg_stat(int msgid,struct msqid_ds msg_info){
- int reval;
- sleep(1);
- reval=msgctl(msgid,IPC_STAT,&msg_info);
- if(reval==-1){
-  printf("get msg info error\n");
-  return;
+void msg_stat(int msgid,struct msqid_ds msg_info)
+{
+ 	int reval; /* define a return value */
+	sleep(1);
+ 	reval=msgctl(msgid,IPC_STAT,&msg_info); /* get the msqid_ds information of msgid and save in msg_info */
+ 	if(reval==-1){ /* get the massage queue imformation failed */
+  	printf("get msg info error\n");
+	return;
  }
+
  printf("\n");
  printf("current number of bytes on queue is %d\n",msg_info.msg_cbytes);
  printf("number of messages in queue is %d\n",msg_info.msg_qnum);
