@@ -177,11 +177,11 @@ int main()
 	char *msgpath="/home/msgqueue"; /* specify path for massage queue */
 	key=ftok(msgpath,'a'); /* use msgpath to create a unique IPC key. 'proj_id' project identifier is the ASCLL value of the character 'a'. the result will be a integer */
 	gflags=IPC_CREAT|IPC_EXCL; /*  */
-	msgid=msgget(key,gflags|00666); /* The 0666 permission value means that the message queue will be created with read and write permissions for all users (readable and writable by the owner, the group, and others).  */
-if(msgid==-1){
- printf("msg create error\n");
- return;
-}
+	msgid=msgget(key,gflags|00666); /* The 00666 permission value means that the message queue will be created with read and write permissions for all users (readable and writable by the owner, the group, and others).  */
+	if(msgid==-1){
+	 printf("msg create error\n");
+	 return;
+	}
 
 msg_stat(msgid,msg_ginfo);
 sflags=IPC_NOWAIT;
