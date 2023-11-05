@@ -117,7 +117,7 @@ int msgget(key_t kye,int flag);
 /* flag: is an integer value that specifies various flags for the msgget operation. typically used like 'IPC_CREAT | 0666', means bitwise ORed with the permissions value (0666) to set the desired permissions for the message queue. */
 /* Some commonly used flags include:*/
 /* 	ipc_create：create a new massage queue. If the specified key exists, it has no effect) */
-/*	ipc_excl：typically used with ipc_create to ensure created, and it'll fail if the specified key exist */
+/*	ipc_excl：exculsive. Typically used with ipc_create to ensure created, and it'll fail if the specified key exist */
 /*	ipc_nowait：used to indicate that a particular operation should be non-blocking. If the desired condition unsatisfied, it will return immediately with an error. */
 /*	or the '|' rusult of the above three, type is symbolic constant, all defined in <sys/ipc.h>*/
 /* 0666: permission value means that the message queue will be created with read and write permissions for all users (readable and writable by the owner, the group, and others). */
@@ -158,7 +158,7 @@ void msg_stat(int,struct msqid_ds);
 
 int main()
 {
-	int gflags,sflags,rflags; /* flags like IPC_CREAT, IPC_EXCL */
+	int gflags,sflags,rflags; /* operation flags like IPC_CREAT, IPC_EXCL */
 	key_t key; /* call function key_t() */
 	int msgid; /* massage queue id return by msgget() */
 	int reval; /* define a return value */
@@ -195,7 +195,7 @@ int main()
 	 printf("message send error\n");
 	}
 
-msg_stat(msgid,msg_ginfo);
+	msg_stat(msgid,msg_ginfo);
 rflags=IPC_NOWAIT|MSG_NOERROR;
 reval=msgrcv(msgid,&msg_rbuf,4,10,rflags);
 if(reval==-1){
