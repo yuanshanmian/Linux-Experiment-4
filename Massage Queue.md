@@ -170,14 +170,14 @@ void msg_stat(int msgid,struct msqid_ds msg_info)
 
  printf("\n");
  printf("current number of bytes on queue is %d\n",msg_info.msg_cbytes); /* print the number of bytes of all the message in message queue */
- printf("number of messages in queue is %d\n",msg_info.msg_qnum);
- printf("max number of bytes on queue is %d\n",msg_info.msg_qbytes);
- printf("pid of last msgsnd is %d\n",msg_info.msg_lspid);
- printf("pid of last msgrcv is %d\n",msg_info.msg_lrpid);
- printf("last msgsnd time is%s",ctime(&(msg_info.msg_stime)));
- printf("last msgrcv time is%s",ctime(&(msg_info.msg_rtime)));
- printf("last change time is%s",ctime(&(msg_info.msg_ctime)));
- printf("msg uid is%d\n",msg_info.msg_perm.uid);
- printf("msg gid is%d\n",msg_info.msg_perm.gid);
+ printf("number of messages in queue is %d\n",msg_info.msg_qnum); /* print the number of the messages in the message queue */
+ printf("max number of bytes on queue is %d\n",msg_info.msg_qbytes);/* print the maximun size of the message queue in the terms of the total size of all the messages */
+ printf("pid of last msgsnd is %d\n",msg_info.msg_lspid); /* print the pid of the last sending message process */ 
+ printf("pid of last msgrcv is %d\n",msg_info.msg_lrpid); /* print the pid of the last reciving message process */ 
+ printf("last msgsnd time is%s",ctime(&(msg_info.msg_stime))); /* print the time of the last time sending message */ 
+ printf("last msgrcv time is%s",ctime(&(msg_info.msg_rtime))); /* print the time of the last time reciving message */ 
+ printf("last change time is%s",ctime(&(msg_info.msg_ctime))); /* print the time of the last time updating the message queue */ 
+ printf("msg uid is%d\n",msg_info.msg_perm.uid); /* print Owner's user ID.  */
+ printf("msg gid is%d\n",msg_info.msg_perm.gid); /* print  Owner's group ID.  */
 }
 ```
