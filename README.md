@@ -98,7 +98,7 @@ struct msg {
 对发送消息，先预设一个msgbuf缓冲区并写入消息类型何内容，调用相应的发送函数。对读取消息，先分配一个msgbuf缓冲区。然后把消息读入该缓冲区
 ```
 struct msgbuf { 
-	long mtype; /* 消息的类型，必须为正数 */ 
+	long mtype; /* use this to represent different kinds of massages, allowing the applications to process them differently based on it */ 
 	char mtext[1]; /* 消息正文 */ 
 	};
 ```
@@ -161,11 +161,11 @@ int main()
 	int gflags,sflags,rflags; /* flags like IPC_CREAT, IPC_EXCL */
 	key_t key; /* call function key_t() */
 	int msgid; /* massage queue id return by msgget() */
-	int reval; /*  */
+	int reval; /* define a return value */
 
 	struct msgsbuf
 	{
-		int mtype; /* massage type is int */
+		int mtype;
 		char mtext[1]; /* text: type is char, lenth is 1 */
 	}msg_sbuf; /* define a massage buffer msg_sbuf */
 
@@ -179,19 +179,21 @@ int main()
 	key=ftok(msgpath,'a'); /* use msgpath to create a unique IPC key. 'proj_id' project identifier is the ASCLL value of the character 'a'. the result will be a integer */
 	gflags=IPC_CREAT|IPC_EXCL; /* g creat a new massage queue with detection */
 	msgid=msgget(key,gflags|00666); /* The 00666 permission value means that the message queue will be created with read and write permissions for all users (readable and writable by the owner, the group, and others).  */
-	if(msgid==-1){ /* massage queue ID creation failed */
+	if(msgid==-1){ /* massage queue ID creation failure */
 	 printf("msg create error\n");
 	 return;
 	}
 
 	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() for g */
 	sflags=IPC_NOWAIT; /* s do a particular operaion should be non-blocking */
-msg_sbuf.mtype=10;
-msg_sbuf.mtext[0]='a';
-reval=msgsnd(msgid,&msg_sbuf,sizeof(msg_sbuf.mtext),sflags);
-if(reval==-1){
- printf("message send error\n");
-}
+	// content of s massage
+	msg_sbuf.mtype=10;
+	msg_sbuf.mtext[0]='a';
+
+	reval=msgsnd(msgid,&msg_sbuf,sizeof(msg_sbuf.mtext),sflags);
+	if(reval==-1){ /* s massage fail in sending failure */
+	 printf("message send error\n");
+	}
 
 msg_stat(msgid,msg_ginfo);
 rflags=IPC_NOWAIT|MSG_NOERROR;
