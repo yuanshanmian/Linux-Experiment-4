@@ -122,10 +122,18 @@ int msgsnd ( int msqid, struct msgbuf *msgp, int msgsz,int msgflg );
 /* msqid：是队列标识符，由msgget()调用返回 */
 /* msgp：是一个指针，指向我们重新声明和装载的消息缓冲区 */
 /* msgsz：包含了消息以字节为单位的长度，其中包括了消息类型的4个字节 */
-/* msgflg：可以设置成0(忽略)，或者IPC_NOWAIT：如果消息队列满，消息不写到队列中，并且控制权返回给调用进程(继续执行)。如果不指定IPC_NOWAIT，调用进程将挂起(阻塞)直到消息被写到队列中 */
+/* msgflg：可以设置成0(忽略)，或者IPC_NOWAIT(非阻塞操作)、MSG_NOERROR(不返回错误信息)、MSG_EXCEPT(接收与 mtype 不匹配的消息),如果为IPC_NOWAIT，且消息队列满，那么消息不写到队列中，并且控制权返回给调用进程(继续执行)。如果不指定IPC_NOWAIT，调用进程将挂起(阻塞)直到消息被写到队列中 */
 ```
 （4）读取消息
 ```
 int msgrcv ( int msqid, struct msgbuf *msgp, int msgsz,long mtype, int msgflg );
+/* msqid：用来指定要检索的队列(必须由msgget()调用返回) */
+/* msgp：是存放检索到消息的缓冲区的地址 */
+/* msgsz：是消息缓冲区的大小，包括消息类型的长度(4字节) */
+/* mtype：指定了消息的类型，如果传递给mytype参数的值为0，就可以不管类型，只返回队列中最早的消息 */
+/* msgflg：可以设置成0(忽略)，或者IPC_NOWAIT(非阻塞操作)、MSG_NOERROR(不返回错误信息)、MSG_EXCEPT(接收与 mtype 不匹配的消息)，如果为IPC_NOWAIT，并且没有可取的消息，那么给调用进程返回ENOMSG错误消息，操作将立即返回，而不会阻塞当前进程。若不为IPC_NOWAIT，调用进程阻塞，直到一条消息到达队列并且满足msgrcv()的参数 */
 ```
-。
+第一个参数用来指定要检索的队列(必须由msgget()调用返回)，第二个参数(msgp)，第三个参数(，第四个参数(。
+（5）消息队列属性操作
+	int msgctl ( int msgqid, int cmd, struct msqid_ds *buf );
+
