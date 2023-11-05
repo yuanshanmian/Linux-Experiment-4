@@ -70,6 +70,7 @@ int msgrcv ( int msqid, struct msgbuf *msgp, int msgsz,long mtype, int msgflg );
 /* msgsz：是消息缓冲区的大小，包括消息类型的长度(4字节) */
 /* mtype：指定了消息的类型，如果传递给mytype参数的值为0，就可以不管类型，只返回队列中最早的消息 */
 /* msgflg：可以设置成0(忽略)，或者IPC_NOWAIT(非阻塞操作)、MSG_NOERROR(不返回错误信息)、MSG_EXCEPT(接收与 mtype 不匹配的消息)，如果为IPC_NOWAIT，并且没有可取的消息，那么给调用进程返回ENOMSG错误消息，操作将立即返回，而不会阻塞当前进程。若不为IPC_NOWAIT，调用进程阻塞，直到一条消息到达队列并且满足msgrcv()的参数 */
+/* return: the number of bytes in the message that was successfully received */
 ```
 第一个参数用来指定要检索的队列(必须由msgget()调用返回)，第二个参数(msgp)，第三个参数(，第四个参数(。
 （5）消息队列属性操作
@@ -128,16 +129,16 @@ int main()
 	}
 
 	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() for g to save current msqid_ds imformation */
-	rflags=IPC_NOWAIT|MSG_NOERROR; /* r flag used in recive message to do a particular operaion should be non-blocking and failure operation will not send error messages*/
+	rflags=IPC_NOWAIT|MSG_NOERROR; /* r flag used in recive message to do a particular operaion should be non-blocking and failure operation will not send error messages */
 	reval=msgrcv(msgid,&msg_rbuf,4,10,rflags); /* recive a message save in msg_rbuf */
-	if(reval==-1){
+	if(reval==-1){ /* failed to recive message*/
 	 printf("read msg error\n");
 	}
-else
- printf("read from msg queue %d bytes\n",reval);
+	else
+ 	printf("read from msg queue %d bytes\n",reval); /* print the number of bytes of recived message */
 
-msg_stat(msgid,msg_ginfo);
-msg_sinfo.msg_perm.uid=8;
+	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() for g to save current msqid_ds imformation */
+	msg_sinfo.msg_perm.uid=8;
 msg_sinfo.msg_perm.gid=8;
 msg_sinfo.msg_qbytes=16388;
 
