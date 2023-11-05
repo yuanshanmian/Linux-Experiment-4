@@ -9,7 +9,7 @@ linux继承了unix v的进程间通信机制（IPC是Inter-Process Communication
  
 # 1、共性描述
 ## 1.1、公有的数据结构
-每一类ipc资源都有一个ipc_ids结构的全局变量用来描述同一类资源的共用数据，三种ipc对象对应的三个全局变量分别是semid_ds,msgid_ds和shmid_ds。
+每一类ipc资源都有一个ipc_ids结构的全局变量用来描述同一类资源的共用数据，三种ipc对象对应的三个全局变量分别是semid_ds,msgid_ds和shmid_ds（具体结构在本文2.1介绍）。
 ipc_ids结构定义如下：
 ```
 struct ipc_ids{
@@ -40,5 +40,57 @@ struct ipc_perm
 };
 ```
 每一个ipc对象都有一个32位的ipc键和一个ipc标识符，ipc标识符由内核分配给ipc对象，在系统内部惟一，IPC机制提供了相应的编程接口根据IPC键值获取标识符。对于一个IPC对象，在打开时返回一个标识符，而关闭后再次打开同一个IPC对象时，该标识符将顺序加1，而键是ipc对象的外部表示，可由程序员选择。不同的进程直接使用key去创建IPC对象容易引起混淆，并且不同的应用之间可能会因为使用同一个key而产生冲突。为此，Linux系统提供了如下机制产生惟一的关键字。
+
 1）创建IPC对象时，指定关键字为IPC_PRIVATE。通过该参数创建的IPC对象的关键字值是0，所以无法在其他进程中通过关键字对该对象进行访问，只能通过返回的标识符进行访问。
-2）调用函数ftok（）产生一个惟一的关键字值。通过IPC进行通信的进程，只需要按照相同的参数调用ftok即可产生惟一的参数。通过该参数可有效解决关键字的产生及惟一性问题。
+
+2）调用函数ftok（）产生一个惟一的关键字值。通过IPC进行通信的进程，只需要按照相同的参数调用ftok即可产生惟一的参数。通过该参数可有效解决关键字的产生及惟一性问题。通过该参数可有效解决关键字的产生及惟一性问题。
+
+## 1.2、linux提供的ipc函数
+（1）ipc对象的创建函数
+```
+semget（）：获得信号量的ipc标识符
+msgget（）：获得消息队列的ipc标识符
+shmget（）：获得共享主存的ipc标识符
+```
+（2）ipc资源控制函数
+
+创建ipc对象后，用户可以通过下面的库函数对ipc对象进行控制
+```
+semctl（）：对信号量资源进行控制
+msgctl（）：对消息队列进行控制
+shmctl（）：对共享主存进行控制
+```
+（3）资源操作函数
+```
+semop（）：用于对信号量资源进行操作，获得或释放一个ipc信号量
+msgsnd（）及msgrcv（）:发送和接收一个ipc消息
+shmat（）及shmdt（）:分别将一个ipc共享主存区附加到进程的虚拟地址空间，以及把共享主存区从进程的虚拟地址空间剥离出去
+```
+# 2、消息队列
+Linux 中的消息可以被描述成在内核地址空间的一个内部链表，每一个消息队列由一个IPC的标识号唯一的标识。Linux 为系统中所有的消息队列维护一个 msg_queue 链表，该链表中的每个指针指向一个 msgid_ds 结构，该结构完整描述对应的一个消息队列。
+## 2.1、消息队列结构(msgid_ds) 
+```
+struct msqid_ds { 
+	struct ipc_perm msg_perm; /* 用于权限和拥有者信息 */ 
+	struct msg *msg_first; /* 队列上第一条消息，即链表头 */ 
+	struct msg *msg_last; /* 队列中的最后一条消息，即链表尾 */ 
+	time_t msg_stime; /* 发送给队列的最后一条消息的时间 */ 
+	time_t msg_rtime; /* 从消息队列接收到的最后一条消息的时间 */ 
+	time_t msg_ctime; /* 最后修改队列的时间*/ 
+	ushort msg_cbytes; /*队列上所有消息总的字节数 */ 
+	ushort msg_qnum; /*在当前队列上消息的个数 */ 
+	ushort msg_qbytes; /* 队列最大的字节数 */ 
+	ushort msg_lspid; /* 发送最后一条消息的进程的pid */ 
+	ushort msg_lrpid; /* 接收最后一条消息的进程的pid */ 
+	};
+```
+## 2.2、消息结构(msg) 
+内核把每一条消息存储在以msg结构为框架的队列中
+```
+struct msg { 
+	struct msg *msg_next; /* 队列上的下一条消息 */ 
+	long msg_type; /*消息类型*/ 
+	char *msg_spot; /* 消息正文的地址 */ 
+	short msg_ts; /* 消息正文的大小 */ 
+	};
+```
