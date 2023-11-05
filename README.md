@@ -114,7 +114,10 @@ struct msgbuf {
 ```
 int msgget(key_t kye,int flag);
 /* key：是一个函数，是创建/打开队列的键值，直接用常量指定或由ftok（）函数产生 */
-/* flag：指定创建/打开方式，可以是_ipc_create_(create a new massage queue. If the specified key exists, it has no effect)、_ipc_excl_(typically used with ipc_create to ensure created, and it'll fail if the specified key exist)、_ipc_nowait_或三者的或结果 */
+/* flag：指定创建/打开方式，可以是：*/
+/* 	ipc_create：create a new massage queue. If the specified key exists, it has no effect) */
+/*	ipc_excl：typically used with ipc_create to ensure created, and it'll fail if the specified key exist */
+/*	ipc_nowait：或三者的或结果 */
 ```
 （3）发送消息
 ```
