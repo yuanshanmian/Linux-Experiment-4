@@ -118,7 +118,8 @@ int msgget(key_t kye,int flag);
 /* Some commonly used flags include:*/
 /* 	ipc_create：create a new massage queue. If the specified key exists, it has no effect) */
 /*	ipc_excl：typically used with ipc_create to ensure created, and it'll fail if the specified key exist */
-/*	ipc_nowait：或三者的或结果,type is symbolic constant, all defined in <sys/ipc.h>*/
+/*	ipc_nowait：used to indicate that a particular operation should be non-blocking. If the desired condition unsatisfied, it will return immediately with an error. */
+/*	or the '|' rusult of the above three, type is symbolic constant, all defined in <sys/ipc.h>*/
 /* 0666: permission value means that the message queue will be created with read and write permissions for all users (readable and writable by the owner, the group, and others). */
 ```
 （3）发送消息
@@ -183,8 +184,8 @@ int main()
 	 return;
 	}
 
-	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() */
-sflags=IPC_NOWAIT;
+	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() for g */
+	sflags=IPC_NOWAIT; /* s do a particular operaion should be non-blocking */
 msg_sbuf.mtype=10;
 msg_sbuf.mtext[0]='a';
 reval=msgsnd(msgid,&msg_sbuf,sizeof(msg_sbuf.mtext),sflags);
@@ -223,7 +224,7 @@ if(reval==-1){
 void msg_stat(int msgid,struct msqid_ds msg_info)
 {
  	int reval; /* define a return value */
-	sleep(1);
+	sleep(1); /* introduce a delay of one second */
  	reval=msgctl(msgid,IPC_STAT,&msg_info); /* get the msqid_ds information of msgid and save in msg_info */
  	if(reval==-1){ /* get the massage queue imformation failed */
   	printf("get msg info error\n");
