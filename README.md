@@ -98,7 +98,7 @@ struct msg {
 对发送消息，先预设一个msgbuf缓冲区并写入消息类型何内容，调用相应的发送函数。对读取消息，先分配一个msgbuf缓冲区。然后把消息读入该缓冲区
 ```
 struct msgbuf { 
-	long mtype; /* use this to represent different kinds of massages, allowing the applications to process them differently based on it */ 
+	long mtype; /* use this to represent different kinds of messages, allowing the applications to process them differently based on it */ 
 	char mtext[1]; /* 消息正文 */ 
 	};
 ```
@@ -116,7 +116,7 @@ int msgget(key_t kye,int flag);
 /* key：是一个函数，是创建/打开队列的键值，直接用常量指定或由ftok（）函数产生 */
 /* flag: is an integer value that specifies various flags for the msgget operation. typically used like 'IPC_CREAT | 0666', means bitwise ORed with the permissions value (0666) to set the desired permissions for the message queue. */
 /* Some commonly used flags include:*/
-/* 	ipc_create：create a new massage queue. If the specified key exists, it has no effect) */
+/* 	ipc_create：create a new message queue. If the specified key exists, it has no effect) */
 /*	ipc_excl：exculsive. Typically used with ipc_create to ensure created, and it'll fail if the specified key exist */
 /*	ipc_nowait：used to indicate that a particular operation should be non-blocking. If the desired condition unsatisfied, it will return immediately with an error. */
 /*	or the '|' rusult of the above three, type is symbolic constant, all defined in <sys/ipc.h>*/
@@ -128,7 +128,7 @@ int msgsnd ( int msqid, struct msgbuf *msgp, int msgsz,int msgflg );
 /* msqid：是队列标识符，由msgget()调用返回 */
 /* msgp：是一个指针，指向我们重新声明和装载的消息缓冲区 */
 /* msgsz：包含了消息以字节为单位的长度，其中包括了消息类型的4个字节 */
-/* msgflg：可以设置成0(忽略)，或者IPC_NOWAIT(非阻塞操作)、MSG_NOERROR(不返回错误信息)、MSG_EXCEPT(接收与 mtype 不匹配的消息),如果为IPC_NOWAIT，且消息队列满，那么消息不写到队列中，并且控制权返回给调用进程(继续执行)。如果不指定IPC_NOWAIT，调用进程将挂起(阻塞)直到消息被写到队列中 */
+/* msgflg：可以设置成0(忽略)，或者IPC_NOWAIT(非阻塞操作)、MSG_NOERROR(perform operation without generating error messages)、MSG_EXCEPT(接收与 mtype 不匹配的消息),如果为IPC_NOWAIT，且消息队列满，那么消息不写到队列中，并且控制权返回给调用进程(继续执行)。如果不指定IPC_NOWAIT，调用进程将挂起(阻塞)直到消息被写到队列中 */
 ```
 （4）读取消息
 ```
@@ -160,47 +160,47 @@ int main()
 {
 	int gflags,sflags,rflags; /* operation flags like IPC_CREAT, IPC_EXCL */
 	key_t key; /* call function key_t() */
-	int msgid; /* massage queue id return by msgget() */
+	int msgid; /* message queue id return by msgget() */
 	int reval; /* define a return value */
 
 	struct msgsbuf
 	{
 		int mtype;
 		char mtext[1]; /* text: type is char, lenth is 1 */
-	}msg_sbuf; /* define a massage buffer msg_sbuf */
+	}msg_sbuf; /* define a message send buffer msg_sbuf */
 
 	struct msgmbuf{
-	 	int mtype; /* massage type is int */
+	 	int mtype; /* message type is int */
 	 	char mtext[10]; /* text: type is char, lenth is 10 */
-	}msg_rbuf; /* define a massage buffer msg_rbuf */
+	}msg_rbuf; /* define a message recive buffer msg_rbuf */
 
-	struct msqid_ds msg_ginfo,msg_sinfo; /* define 2 massage queue ID data structure for g and s */
-	char *msgpath="/home/msgqueue"; /* specify path for massage queue */
+	struct msqid_ds msg_ginfo,msg_sinfo; /* define 2 message queue ID data structure for g and s */
+	char *msgpath="/home/msgqueue"; /* specify path for message queue */
 	key=ftok(msgpath,'a'); /* use msgpath to create a unique IPC key. 'proj_id' project identifier is the ASCLL value of the character 'a'. the result will be a integer */
-	gflags=IPC_CREAT|IPC_EXCL; /* g creat a new massage queue with detection */
+	gflags=IPC_CREAT|IPC_EXCL; /* g flag used in massage id create to create a new massage queue with detection */
 	msgid=msgget(key,gflags|00666); /* The 00666 permission value means that the message queue will be created with read and write permissions for all users (readable and writable by the owner, the group, and others).  */
 	if(msgid==-1){ /* massage queue ID creation failure */
 	 printf("msg create error\n");
 	 return;
 	}
 
-	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() for g */
-	sflags=IPC_NOWAIT; /* s do a particular operaion should be non-blocking */
+	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() for g to save current msqid_ds imformation */
+	sflags=IPC_NOWAIT; /* s flag used in send massage to do a particular operaion should be non-blocking */
 	// content of s massage
 	msg_sbuf.mtype=10;
 	msg_sbuf.mtext[0]='a';
 
-	reval=msgsnd(msgid,&msg_sbuf,sizeof(msg_sbuf.mtext),sflags);
+	reval=msgsnd(msgid,&msg_sbuf,sizeof(msg_sbuf.mtext),sflags); /* send a massage from msg_sbuf */
 	if(reval==-1){ /* s massage fail in sending failure */
 	 printf("message send error\n");
 	}
 
-	msg_stat(msgid,msg_ginfo);
-rflags=IPC_NOWAIT|MSG_NOERROR;
-reval=msgrcv(msgid,&msg_rbuf,4,10,rflags);
-if(reval==-1){
- printf("read msg error\n");
-}
+	msg_stat(msgid,msg_ginfo); /* call funtion msg_stat() for g to save current msqid_ds imformation */
+	rflags=IPC_NOWAIT|MSG_NOERROR; /* r flag used in recive massage to do a particular operaion should be non-blocking and failure operation will not send error messages*/
+	reval=msgrcv(msgid,&msg_rbuf,4,10,rflags); /* recive a massage save in msg_rbuf */
+	if(reval==-1){
+	 printf("read msg error\n");
+	}
 else
  printf("read from msg queue %d bytes\n",reval);
 
